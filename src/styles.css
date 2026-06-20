@@ -19,7 +19,7 @@ button { cursor: pointer; }
 h1 { max-width: 850px; margin: 0; font-family: Georgia, serif; font-size: clamp(42px, 7vw, 78px); font-weight: 500; line-height: .98; letter-spacing: -.04em; }
 .hero__copy { max-width: 580px; margin: 28px 0 0; color: #c9d7cf; font-size: 17px; line-height: 1.7; }
 .shell { position: relative; margin-top: -54px; }
-.tabs { display: flex; gap: 4px; width: fit-content; padding: 5px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); box-shadow: var(--shadow); }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; width: fit-content; max-width: 100%; padding: 5px; border: 1px solid var(--line); border-radius: 20px; background: var(--card); box-shadow: var(--shadow); }
 .tab { min-width: 98px; border: 0; border-radius: 999px; padding: 11px 20px; color: var(--muted); background: transparent; font-weight: 750; }
 .tab.is-active { color: white; background: var(--accent); }
 .tool { margin: 22px 0 72px; padding: clamp(24px, 4vw, 48px); border: 1px solid var(--line); border-radius: 22px; background: var(--card); box-shadow: var(--shadow); }
@@ -29,6 +29,11 @@ h1 { max-width: 850px; margin: 0; font-family: Georgia, serif; font-size: clamp(
 h2 { margin: 0; font-family: Georgia, serif; font-size: clamp(28px, 4vw, 40px); font-weight: 500; }
 .tool__heading > p { margin: 0; color: var(--muted); }
 .workspace { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 20px; align-items: center; }
+.word-count { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr); gap: 20px; align-items: stretch; }
+.word-count__stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.stat-tile { display: grid; align-content: space-between; min-height: 96px; border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: #faf8f1; }
+.stat-tile span { color: var(--muted); font-size: 12px; font-weight: 850; letter-spacing: .1em; }
+.stat-tile strong { color: var(--ink); font-family: Georgia, serif; font-size: clamp(26px, 4vw, 38px); font-weight: 500; line-height: 1; word-break: break-word; }
 .field { display: grid; gap: 9px; }
 .field span, .select-label { color: var(--muted); font-size: 11px; font-weight: 850; letter-spacing: .14em; }
 textarea { width: 100%; min-height: 300px; resize: vertical; border: 1px solid var(--line); border-radius: 14px; padding: 18px; color: var(--ink); background: #faf8f1; font-family: "Cascadia Code", Consolas, monospace; font-size: 14px; line-height: 1.55; outline: none; }
@@ -50,7 +55,7 @@ footer span:first-child { color: var(--ink); font-weight: 850; letter-spacing: .
 @media (max-width: 760px) {
   .hero { padding-top: 50px; }
   .tool__heading { align-items: flex-start; flex-direction: column; }
-  .workspace { grid-template-columns: 1fr; }
+  .workspace, .word-count { grid-template-columns: 1fr; }
   .actions--vertical { flex-direction: row; }
   .actions button { flex: 1; }
   textarea { min-height: 220px; }

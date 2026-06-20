@@ -2,11 +2,11 @@
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
 
 const activeTab = ref('base64')
-const tabs = [['base64', 'Base64'], ['uri', 'URI'], ['json', 'JSON'], ['converter', '檔案轉換']]
-const text = reactive({ base64Input: '', base64Output: '', uriInput: '', uriOutput: '', jsonInput: '', jsonOutput: '' })
+const tabs = [['base64', 'Base64'], ['uri', 'URI'], ['json', 'JSON'], ['wordCount', '字數計算'], ['converter', '檔案轉換']]
+const text = reactive({ base64Input: '', base64Output: '', uriInput: '', uriOutput: '', jsonInput: '', jsonOutput: '', wordCountInput: '' })
 const uriMode = ref('component')
 const jsonIndent = ref('2')
-const textStatus = reactive({ base64: '', uri: '', json: '' })
+const textStatus = reactive({ base64: '', uri: '', json: '', wordCount: '' })
 
 function utf8ToBase64(value) {
   const bytes = new TextEncoder().encode(value)
@@ -34,6 +34,27 @@ function runJson(minify = false) {
 }
 async function copyText(value, tool) { await navigator.clipboard.writeText(value); textStatus[tool] = '已複製' }
 function clearText(tool) { text[tool + 'Input'] = ''; text[tool + 'Output'] = ''; textStatus[tool] = '' }
+const wordCountStats = computed(() => {
+  const value = text.wordCountInput
+  const trimmed = value.trim()
+  const cjkCharacters = value.match(/\p{Script=Han}/gu)?.length ?? 0
+  const latinWords = value.match(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu)?.filter((word) => !/^\p{Script=Han}+$/u.test(word)).length ?? 0
+  const readingUnits = cjkCharacters + latinWords
+
+  return [
+    { label: '總字元', value: value.length },
+    { label: '不含空白', value: value.replace(/\s/g, '').length },
+    { label: '中文字', value: cjkCharacters },
+    { label: '英文單字', value: latinWords },
+    { label: '行數', value: value ? value.split(/\r\n|\r|\n/).length : 0 },
+    { label: '段落', value: trimmed ? trimmed.split(/\n\s*\n/).filter(Boolean).length : 0 },
+    { label: '標點符號', value: value.match(/\p{P}/gu)?.length ?? 0 },
+    { label: '閱讀時間', value: readingUnits ? Math.max(1, Math.ceil(readingUnits / 300)) + ' 分鐘' : '0 分鐘' }
+  ]
+})
+const wordCountSummary = computed(() => wordCountStats.value.map((item) => item.label + '：' + item.value).join('\n'))
+async function copyWordCountSummary() { await navigator.clipboard.writeText(wordCountSummary.value); textStatus.wordCount = '已複製統計結果' }
+function clearWordCount() { text.wordCountInput = ''; textStatus.wordCount = '' }
 
 const catalog = {
   document: [
@@ -228,8 +249,22 @@ onBeforeUnmount(() => { clearResult(); ffmpegInstance?.terminate() })
       <div class="utility"><button @click="copyText(text.jsonOutput, 'json')">Copy output</button><button @click="clearText('json')">Clear</button></div><p class="status">{{ textStatus.json }}</p>
     </section>
 
+    <section v-if="activeTab === 'wordCount'" class="tool">
+      <div class="tool__heading"><div><p class="tool__number">04</p><h2>字數計算</h2></div><p>即時統計中英文內容、段落與閱讀時間</p></div>
+      <div class="word-count">
+        <label class="field"><span>INPUT</span><textarea v-model="text.wordCountInput" placeholder="貼上文章、文案或筆記內容..."></textarea></label>
+        <div class="word-count__stats" aria-label="字數統計">
+          <div v-for="item in wordCountStats" :key="item.label" class="stat-tile">
+            <span>{{ item.label }}</span>
+            <strong>{{ item.value }}</strong>
+          </div>
+        </div>
+      </div>
+      <div class="utility"><button @click="copyWordCountSummary">Copy stats</button><button @click="clearWordCount">Clear</button></div><p class="status">{{ textStatus.wordCount }}</p>
+    </section>
+
     <section v-if="activeTab === 'converter'" class="tool converter">
-      <div class="tool__heading"><div><p class="tool__number">04</p><h2>File converter</h2></div><p>先選類別，再選轉換功能</p></div>
+      <div class="tool__heading"><div><p class="tool__number">05</p><h2>File converter</h2></div><p>先選類別，再選轉換功能</p></div>
       <div class="converter__selectors">
         <label class="picker"><span>類別</span><select v-model="category"><option value="document">文件類</option><option value="image">圖片類</option><option value="media">影音類</option></select></label>
         <label class="picker"><span>轉換成</span><select v-model="operationId"><option v-for="item in catalog[category]" :key="item.id" :value="item.id">{{ item.label }}{{ item.ready ? '' : '（需要後端）' }}</option></select></label>
